@@ -1,2 +1,2 @@
-# search-engine
-compressed trie based search engine
+# Search Engine
+###### Compressed trie based implementation of a search engine
