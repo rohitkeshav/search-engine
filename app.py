@@ -1,7 +1,5 @@
 import argparse
 
-# TODO: remove stop words
-# TODO: remove punctuations
 # TODO: escape html tags, maybe not required since beautiful soup
 
 
