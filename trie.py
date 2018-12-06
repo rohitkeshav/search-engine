@@ -1,4 +1,6 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
+from itertools import chain
+
 from string import punctuation
 
 from nltk import word_tokenize
@@ -85,9 +87,6 @@ def add(root, name):
 
     node.visited += 1
 
-    # index to occurrence map
-    # v_map = inverse_index(temp_docs)
-
     for key in node.children:
         pre, _key, _name = extract_prefix(key, name)
 
@@ -143,21 +142,6 @@ def extract_prefix(str1, str2):
     return str1[:n], str1[n:], str2[n:]
 
 
-# run('What do computers, cells, and brains have in common')
-
-
-# loot = Node()
-# a = ['what', 'is', 'my', 'name', 'there']
-#
-# for i in a:
-#     add(loot, i)
-#
-# print(find(loot, 'occurrence'))
-# print(find(loot, 'outside'))
-# print(find(loot, 'mnb'))
-
-from itertools import chain
-from collections import Counter
 def ranking(search_result):
     # simple function to rank the output
 
