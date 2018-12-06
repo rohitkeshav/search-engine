@@ -159,7 +159,8 @@ def run(sq):
         "https://mitpress.mit.edu/blog/elections-and-patriotism-midcentury-vinyl",
         "https://mitpress.mit.edu/blog/happy-25th-birthday-hal",
         "https://mitpress.mit.edu/blog/how-entrepreneurship-good-economic-growth",
-        "https://mitpress.mit.edu/blog/video-games-around-world"
+        "https://mitpress.mit.edu/blog/video-games-around-world",
+        "https://mitpress.mit.edu/blog/transgender-day-remembrance-celebrating-dr-ben-barres"
     ]
 
     data = inverse_index(hit_urls(url_list))
@@ -186,7 +187,7 @@ def run(sq):
     resulting_idx = ranking(retval)
 
     if not resulting_idx:
-        print(f'No results for your search query - {sq}')
+        print(f'\n No results for your search query - {sq}')
         print('\n  Modify the query and try again, listed below are the searched URLs')
 
         for idx, ul in enumerate(url_list):
@@ -194,6 +195,6 @@ def run(sq):
 
         return
 
-    print("Search results, in decreasing order of relevance")
+    print("\n Search results, in decreasing order of relevance \n")
     for idx, val in enumerate(resulting_idx):
         print(f'{idx+1}: {url_list[val]}')
