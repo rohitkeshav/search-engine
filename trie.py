@@ -194,7 +194,6 @@ def run(sq):
 
         return
 
-    print("Search results")
-    for idx in resulting_idx:
-        print(url_list[idx])
-
+    print("Search results, in decreasing order of relevance")
+    for idx, val in enumerate(resulting_idx):
+        print(f'{idx+1}: {url_list[val]}')
