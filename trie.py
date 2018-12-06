@@ -22,6 +22,7 @@ def clean_html(html_data):
     # remove all javascript and stylesheet code
     for ss_tag in soup(["script", "style"]):
         ss_tag.extract()
+
     # get text
     text = soup.get_text()
 
@@ -67,6 +68,7 @@ def inverse_index(data):
     return d_map
 
 
+# compressed trie nodes
 class Node:
 
     def __init__(self, children=None, is_leaf=False, visited=0):
@@ -144,7 +146,6 @@ def extract_prefix(str1, str2):
 
 def ranking(search_result):
     # simple function to rank the output
-
     check = chain(*[search_result[k] for k in search_result])
 
     cobj = Counter(check)
@@ -193,6 +194,7 @@ def run(sq):
 
         return
 
+    print("Search results")
     for idx in resulting_idx:
         print(url_list[idx])
 
