@@ -155,7 +155,10 @@ def ranking(search_result):
 def run(sq):
     url_list = [
         "https://mitpress.mit.edu/blog/brain-awareness-week-digital-mind",
-        "https://mitpress.mit.edu/blog/elections-and-patriotism-midcentury-vinyl"
+        "https://mitpress.mit.edu/blog/elections-and-patriotism-midcentury-vinyl",
+        "https://mitpress.mit.edu/blog/happy-25th-birthday-hal",
+        "https://mitpress.mit.edu/blog/how-entrepreneurship-good-economic-growth",
+        "https://mitpress.mit.edu/blog/video-games-around-world"
     ]
 
     data = inverse_index(hit_urls(url_list))
@@ -174,6 +177,7 @@ def run(sq):
 
     retval = {}
 
+    # search the compressed trie using the find function
     for key in query:
         if find(root, key):
             retval.update({key: MAIN_MAP[key]})
