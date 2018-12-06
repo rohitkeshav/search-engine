@@ -25,4 +25,4 @@
     4: https://mitpress.mit.edu/blog/how-entrepreneurship-good-economic-growth
     5: https://mitpress.mit.edu/blog/video-games-around-world
 
-###### Shows top five results irrespective of the number of urls it searches. For demo purpose I am using 6 urls of articles from the MITPress blogs page
+###### Shows the top five results irrespective of the number of urls it searches. For demo purpose I am using 6 urls of articles from the MITPress blog page
