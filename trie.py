@@ -72,11 +72,7 @@ def inverse_index(data):
 class Node:
 
     def __init__(self, children=None, is_leaf=False, visited=0):
-        if children is None:
-            self.children = {}
-        else:
-            self.children = children
-
+        self.children = {} if not children else children
         self.is_leaf = is_leaf
         self.visited = visited
         self.occurrences = []
