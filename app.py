@@ -2,6 +2,8 @@ import argparse
 
 from trie import run
 
+__author__ = "Rohit Keshav"
+
 
 def search(query):
     run(query)
