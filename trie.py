@@ -3,15 +3,41 @@ from string import punctuation
 
 from nltk import word_tokenize
 from nltk.corpus import stopwords
+from bs4 import BeautifulSoup
 
-temp_docs = [
-    "what is your name occurrence internal memory?",
-    "which city do you belong to",
-    "The reason for storing the occurrence lists outside the trie is to keep the size of the trie data structure "
-    "sufficiently small to fit in internal memory.",
-    "When multiple keywords are given and the desired output is the pages containing all the given keywords, "
-    "we retrieve the occurrence list of each keyword using the trie and return their intersection."
-]
+import requests
+
+
+MAIN_MAP = defaultdict(list)
+
+
+def clean_html(html_data):
+    """
+        Clean html
+    """
+    soup = BeautifulSoup(html_data, 'lxml')
+
+    # remove all javascript and stylesheet code
+    for ss_tag in soup(["script", "style"]):
+        ss_tag.extract()
+    # get text
+    text = soup.get_text()
+
+    # break into lines and remove leading and trailing space on each
+    lines = (line.strip() for line in text.splitlines())
+
+    # break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+
+    # drop blank lines
+    text = '\n'.join(chunk for chunk in chunks if chunk)
+
+    return text
+
+
+def hit_urls(url_list):
+
+    return [clean_html(requests.get(url).text) for url in url_list]
 
 
 # tokenize doc - removes stopwords and punctuations
@@ -22,7 +48,7 @@ def tokenizer(sentence):
     for word in word_tokenize(sentence):
         lw = word.lower()
 
-        if word not in punctuation and lw not in swords:
+        if word not in punctuation and lw not in swords and word != '':
             tokens.append(lw)
 
     return tokens
@@ -41,55 +67,144 @@ def inverse_index(data):
 
 class Node:
 
-    def __init__(self):
-        self.next = defaultdict(Node)
-        self.is_end = False
+    def __init__(self, children=None, is_leaf=False, visited=0):
+        if children is None:
+            self.children = {}
+        else:
+            self.children = children
+
+        self.is_leaf = is_leaf
+        self.visited = visited
         self.occurrences = []
 
 
-class Trie:
+# compressed trie implementation
+# add node to the trie
+def add(root, name):
+    node = root
 
-    def __init__(self):
-        self.root = Node()
-        self.v_map = inverse_index(temp_docs)
+    node.visited += 1
 
-    def insert(self, word):
-        if self.search(word):
-            print(f'{word} already exists')
+    # index to occurrence map
+    # v_map = inverse_index(temp_docs)
 
-            return
+    for key in node.children:
+        pre, _key, _name = extract_prefix(key, name)
 
-        n_node = self.root
+        if _key == '':
+            # there is a match of a part of the key
+            child = node.children[key]
+            return add(child, _name)
 
-        for char in word:
-            n_node = n_node.next[char]
+        if pre != '':
+            child = node.children[key]
 
-        n_node.is_end = True
+            # need to split
+            _node = Node(children={_key: child}, visited=child.visited)
 
-        # added this line
-        n_node.occurrences.extend(self.v_map[word.lower()])
+            del node.children[key]
+            node.children[pre] = _node
 
-    def search(self, word):
-        n_node = self.root
+            return add(_node, _name)
 
-        # changed word instead of word.lower()
-        for char in word.lower():
-            n_node = n_node.next[char]
+    node.children[name] = Node(is_leaf=True, visited=1)
 
-        # return n_node.is_end
-        return n_node.occurrences
+    # add here
+    # print(MAIN_MAP[name.lower()])
+    # import time
+    # time.sleep(10)
 
-
-T = Trie()
-T.insert('sufficiently')
-T.insert('keshav')
-T.insert('occurrence')
-T.insert('wassup')
-T.insert('doom')
-T.insert('containing')
+    # node.children[name].occurrences.extend(MAIN_MAP[name.lower()])
 
 
-print(T.search('containing'))
-print(T.search('mc'))
-print(T.search('Occurrence'))
-print(T.search('doo'))
+# find word in trie
+def find(root, name):
+    node = root
+
+    for key in node.children:
+
+        pre, _key, _name = extract_prefix(key, name)
+
+        if _name == '':
+                return node.children[key].visited
+
+        if _key == '':
+            return find(node.children[key], _name)
+
+    return 0
+
+
+def extract_prefix(str1, str2):
+    n = 0
+    for c1, c2 in zip(str1, str2):
+        if c1 != c2:
+            break
+        n += 1
+    return str1[:n], str1[n:], str2[n:]
+
+
+# run('What do computers, cells, and brains have in common')
+
+
+# loot = Node()
+# a = ['what', 'is', 'my', 'name', 'there']
+#
+# for i in a:
+#     add(loot, i)
+#
+# print(find(loot, 'occurrence'))
+# print(find(loot, 'outside'))
+# print(find(loot, 'mnb'))
+
+from itertools import chain
+from collections import Counter
+def ranking(search_result):
+    # simple function to rank the output
+
+    check = chain(*[search_result[k] for k in search_result])
+
+    cobj = Counter(check)
+
+    return [top[0] for top in cobj.most_common(n=5)]
+
+
+def run(sq):
+    url_list = [
+        "https://mitpress.mit.edu/blog/brain-awareness-week-digital-mind",
+        "https://mitpress.mit.edu/blog/elections-and-patriotism-midcentury-vinyl"
+    ]
+
+    data = inverse_index(hit_urls(url_list))
+
+    # update main map with words from the html pages, with their occurrences
+    MAIN_MAP.update(data)
+
+    query = tokenizer(sq)
+
+    root = Node()
+    ignore = ['©', '—', '’', '“', '”', "''"]
+
+    for word in MAIN_MAP:
+        if word not in ignore:
+            add(root, word)
+
+    retval = {}
+
+    for key in query:
+        if find(root, key):
+            retval.update({key: MAIN_MAP[key]})
+
+    resulting_idx = ranking(retval)
+
+    if not resulting_idx:
+        print(f'No results for your search query - {sq}')
+        print('\n  Modify the query and try again, listed below are the searched URLs')
+
+        for idx, ul in enumerate(url_list):
+            print(f'{idx+1}. {ul}')
+
+        return
+
+    for idx in resulting_idx:
+        print(url_list[idx])
+
